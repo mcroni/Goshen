@@ -27,164 +27,75 @@ from mat.button import MDRaisedButton
 from mat.list import MDList
 from mat.list import TwoLineListItem, OneLineListItem
 
-from os.path import dirname
-from os.path import join
-from os.path import realpath
-
-
-from plyer import notification
-from plyer.utils import platform
-from plyer.compat import PY2
 
 
 from models import *
 from pony.orm import *
+from plyer import camera
 
+
+from screens import *
 db = Database()
 db.bind('sqlite','details.sqlite')
 
 
-class Drawer(NavigationDrawer):
-    spinner = ObjectProperty(None)
-    scroll_v = ObjectProperty(None)
-    two_item = ObjectProperty(None)
-    ml = ObjectProperty(None)
 
+
+
+
+
+class CallerButton(TwoLineListItem):
     def __init__(self,**kwargs):
-        super(Drawer, self).__init__(**kwargs)
+        super(CallerButton,self).__init__(**kwargs)
 
-    def load(self):
-        with db_session:
-            persons = select(p for p in Person)
-            for p in persons:
-                #self.ids.scroll_v.add_widget(Button(text=p.name))
-                print(("{} \t {}").format(p.name, p.number))
-
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.pressed = touch.pos
+            # return True
+            print('testing the called button')
 
 
 
-
-
-class GoshenTV(Screen):
-    pass
-class MainScreen(Screen):
-    def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(**kwargs)
-    #list of previous screens
-class Testimonies(Screen, BoxLayout):
-    def __init__(self, **kwargs):
-        super(Testimonies, self).__init__(**kwargs)
-class Requests(Screen):
-    def do_notify(self, mode='normal'):
-        title = 'Goshen Notify'
-        message = 'You Have A New Message'
-        # ticker = self.ids.ticker_text.text
-        if PY2:
-            title = title.decode('utf8')
-            message = message.decode('utf8')
-        kwargs = {'title': title, 'message': message,}
-
-        if mode == 'fancy':
-            kwargs['app_name'] = "Plyer Notification Example"
-            if platform == "win":
-                kwargs['app_icon'] = join(dirname(realpath(__file__)),
-                                          'tower.ico')
-                kwargs['timeout'] = 4
-            else:
-                kwargs['app_icon'] = join(dirname(realpath(__file__)),
-                                          'tower.png')
-        notification.notify(**kwargs)
-class Sermons(Screen):
-    pass
-class Guide(Screen):
-    pass
-class Pastors(Screen, FloatLayout):
-    pas_text_field = ObjectProperty(None)
-    name_text_field = ObjectProperty(None)
-
-
-    def register(self):
-        p = Popup(title='Register',size_hint=(.8, None),height=dp(200))
-        b = BoxLayout(orientation= 'vertical')
-        text_field = SingleLineTextField(hint_text='name')
-        pass_field = SingleLineTextField(hint_text='password')
-        button = MDRaisedButton(text="Register")
-        b.add_widget(text_field)
-        b.add_widget(pass_field)
-        b.add_widget(button)
-
-        p.add_widget(b)
-        p.open()
-    def print_names(self):
-        print(self.ids.pas_text_field.text,self.ids.name_text_field.text)
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-class Announcements(Screen):
-    pass
-class Calender(Screen):
-    pass
-class Donations(Screen):
-    pass
-
-
-
-
-
-class Directory(Screen):
+class Directory(Screen,FloatLayout):
     ml = ObjectProperty(None)
-    scroll = ObjectProperty(None)
-    one = ObjectProperty(None)
-    def load(self):
-        contacts = [
-            ["Annie", "555-24235",],
-            ["Bob", "555-15423",],
-            ["Claire", "555-66098",]
-        ]
-        for c in contacts:
-            print(c)
-            self.ids.ml.add_widget(OneLineListItem(text=str(contacts[0])))
-
-
+    scroller = ObjectProperty(None)
     def load_contacts(self):
         with db_session:
             persons = select(p for p in Person)
             for p in persons:
-                # self.ids.scroll_v.add_widget(Button(text=p.name))
-                #print(("{} \t {}").format(p.name, p.number))
-                self.ids.ml.add_widget(TwoLineListItem(text=str(p.name),
+                self.ids.ml.add_widget(CallerButton(text=str(p.name),
                                                        secondary_text=str((p.number))))
 
 
 
 
 
+class Drawer(NavigationDrawer):
+    def __init__(self,**kwargs):
+        super(Drawer, self).__init__(**kwargs)
 
+
+
+
+
+
+
+
+######################################
 class AvatarSampleWidget(ILeftBody, Image):
     pass
-
-
-
-
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
     pass
-
 class IconRightSampleWidget(IRightBodyTouch, MDCheckbox):
     pass
+#########################################################################
 
 
-######################3
+
+
+
+
+
 class Jarvis(App):
     def __init__(self, **kwargs):
         super(Jarvis, self).__init__(**kwargs)
@@ -210,6 +121,7 @@ class Jarvis(App):
         donations = Donations(name='donations')
         directory = Directory(name='directory')
         goshen_tv = GoshenTV(name= 'goshen_tv')
+        gallery = Gallery(name='gallery')
 
         self.my_screenmanager.add_widget(main_screen)
         self.my_screenmanager.add_widget(testimonies)
@@ -221,6 +133,7 @@ class Jarvis(App):
         self.my_screenmanager.add_widget(donations)
         self.my_screenmanager.add_widget(directory)
         self.my_screenmanager.add_widget(goshen_tv)
+        self.my_screenmanager.add_widget(gallery)
 
 
 
@@ -230,7 +143,7 @@ class Jarvis(App):
 
 
         self.nav_drawer = Drawer()
-        self.do_notify(mode='fancy')
+
         return self.my_screenmanager
 
     def theme_swap(self):
@@ -253,24 +166,6 @@ class Jarvis(App):
 
         return False
 
-    def do_notify(self, mode='normal'):
-        title = 'Goshen Notify'
-        message = 'You Have A New Message'
-        # ticker = self.ids.ticker_text.text
-        if PY2:
-            title = title.decode('utf8')
-            message = message.decode('utf8')
-        kwargs = {'title': title, 'message': message,}
-
-        if mode == 'fancy':
-            kwargs['app_name'] = "Plyer Notification Example"
-            if platform == "win":
-                kwargs['app_icon'] = join(dirname(realpath(__file__)),
-                                          'tower.ico')
-                kwargs['timeout'] = 4
-            else:
-                kwargs['app_icon'] = join(dirname(realpath(__file__)),
-                                          'tower.png')
 
 if __name__=="__main__":
     from kivy.core.text import LabelBase
