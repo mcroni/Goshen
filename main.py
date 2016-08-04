@@ -29,30 +29,28 @@ from mat.list import TwoLineListItem, OneLineListItem
 
 
 
-from models import *
-from pony.orm import *
-from plyer import camera
 
+from plyer.platforms.android.notification import AndroidNotification
 
 from screens import *
-db = Database()
-db.bind('sqlite','details.sqlite')
-
-
-
-
-
+from models import *
+session = Session()
 
 
 class CallerButton(TwoLineListItem):
     def __init__(self,**kwargs):
         super(CallerButton,self).__init__(**kwargs)
 
-    def on_touch_down(self, touch):
+    def on_touch_down(self,touch):
         if self.collide_point(*touch.pos):
             self.pressed = touch.pos
-            # return True
-            print('testing the called button')
+            print('calling')
+            notiff = AndroidNotification()
+            title = 'goshen'
+            notiff.notify(title= title, message='Calling ', app_name='goshen_app',app_icon='tower.ico',timeout=10)
+
+
+
 
 
 
@@ -60,11 +58,9 @@ class Directory(Screen,FloatLayout):
     ml = ObjectProperty(None)
     scroller = ObjectProperty(None)
     def load_contacts(self):
-        with db_session:
-            persons = select(p for p in Person)
-            for p in persons:
-                self.ids.ml.add_widget(CallerButton(text=str(p.name),
-                                                       secondary_text=str((p.number))))
+        for name,number in session.query(Person.name,Person.number):
+            self.ids.ml.add_widget(CallerButton(text=str(name),secondary_text=str(number)))
+                
 
 
 
@@ -166,6 +162,12 @@ class Jarvis(App):
 
         return False
 
+
+    def on_pause(self):
+        return True
+
+    def on_resume(self):
+        pass
 
 if __name__=="__main__":
     from kivy.core.text import LabelBase
