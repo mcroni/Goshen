@@ -29,8 +29,9 @@ from mat.list import TwoLineListItem, OneLineListItem
 
 
 
+from plyer import vibrator
+from plyer import call
 
-from plyer.platforms.android.notification import AndroidNotification
 
 from screens import *
 from models import *
@@ -44,10 +45,14 @@ class CallerButton(TwoLineListItem):
     def on_touch_down(self,touch):
         if self.collide_point(*touch.pos):
             self.pressed = touch.pos
-            print('calling')
-            notiff = AndroidNotification()
-            title = 'goshen'
-            notiff.notify(title= title, message='Calling ', app_name='goshen_app',app_icon='tower.ico',timeout=10)
+	    vibrator.vibrate(0.1)
+	    call.dialcall()
+            #call.makecall(tel=self.tel)
+            #print('calling')
+            #notiff = AndroidNotification()
+            #title = 'goshen'
+            #notiff.notify(title= title, message='Calling ',app_name='goshen_app',app_icon='tower.ico',timeout=10)
+
 
 
 
@@ -60,6 +65,8 @@ class Directory(Screen,FloatLayout):
     def load_contacts(self):
         for name,number in session.query(Person.name,Person.number):
             self.ids.ml.add_widget(CallerButton(text=str(name),secondary_text=str(number)))
+            
+            
                 
 
 
