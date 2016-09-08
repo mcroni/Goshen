@@ -16,9 +16,33 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 #:import colors mat.color_definitions.colors
 #:import SmartTile mat.grid.SmartTile
+#:import SmartTileWithLabel mat.grid.SmartTileWithLabel
 #:import MDSlider mat.slider.MDSlider
 #:import MDLabel mat.label.MDLabel
-#:import Directory main
+#:import MDDialog mat.dialog.MDDialog
+
+
+
+
+
+
+<DBScroll>:
+    id: dbscroll
+    title: ''
+    size_hint: None, None
+    size: 400,100
+    FloatLayout:
+        Label:
+            text: 'Sending'
+
+            pos_hint:{'center_x': 0.8, 'center_y': 0.7}
+            size_hint: None, None
+            size: 50,100
+
+        MDSpinner:
+            size_hint: None,None
+            size: dp(30),dp(30)
+            pos_hint:{'center_x': 0.2, 'center_y': 0.7}
 
 
 <MainScreen>:
@@ -33,45 +57,33 @@
 
 
 
-<Requests>:
-    Image:
-        source: 'tower.png'
+
+<F>:
+    name: name
+    message: message
+    id: sub_button
+    title: 'Share Your Testimony'
+    markup: True
+    size_hint: .9, None
+    height: dp(300)
+    pos_hint:{'center_x': 0.5, 'center_y': 0.65}
+    background: 'white.png'
     FloatLayout:
-        MDLabel:
-            font_style: 'Body1'
-            theme_text_color: 'Primary'
-            text: "Phil 4:6\nDont\'t worry about anything;instead pray about everything. Tell God what you need and thank him for all he has done"
-            halign: 'center'
-            pos_hint:{'center_x': 0.5, 'center_y': 0.85}
-            markup: True
-            font_size: 25
-            color: 1, 0, 0, 1
-
         SingleLineTextField:
-            size_hint: 0.6, None
-            height: dp(48)
-            hint_text: "Full Name "
-            pos_hint: {'center_x':.5, 'center_y': .6}
-            font_name:'Roboto-Thin'
+            id: name
+            hint_text: 'Name'
             multiline: False
-
+            pos_hint:{'center_x': 0.5, 'center_y': 0.8}
         SingleLineTextField:
-            size_hint: 0.6, None
-            height: dp(50)
-            hint_text: "Prayer "
-            pos_hint: {'center_x':.5, 'center_y': .4}
-            font_name:'Roboto-Thin'
+            id: message
+            hint_text: 'Message'
             multiline: True
-            hint_text: "Type Your Requests Here"
-        MDFloatingActionButton:
-            id:  float_act_btn
-            icon:'plus'
-            size_hint: None, None
-            size: dp(56), dp(56)
-            opposite_colors:    True
-            elevation_normal:    8
-            pos_hint:{'center_x': 0.8, 'center_y': 0.2}
-            on_release: root.do_notify(mode='fancy')
+            pos_hint:{'center_x': 0.5, 'center_y': 0.5}
+
+        MDFlatButton:
+            text: 'ShieeeeeeM)'
+            pos_hint:{'center_x': 0.5, 'center_y': 0.2}
+            on_press: root.shiemor()
 
 
 <Testimonies>:
@@ -93,15 +105,20 @@
         size: 4 * dp(40), dp(40)
         pos_hint: {'center_x': 0.2, 'center_y': 0.3}
         font_name: 'Roboto-Regular'
+        on_release: root.share();
 
 
     MDRaisedButton:
-        text: " reader"
+        text: " read"
         opposite_colors: True
         size_hint: None, None
         size: 4 * dp(40), dp(40)
         pos_hint: {'center_x': 0.8, 'center_y': 0.3}
         font_name: 'Roboto-Regular'
+        on_release: root.read()
+
+
+
 
 
 <Pastors>:
@@ -136,7 +153,10 @@
             size: 4 * dp(40), dp(40)
             pos_hint: {'center_x': 0.5, 'center_y': 0.3}
             font_name: 'Roboto-Regular'
-            on_release: root.print_names()
+            on_release: root.login()
+
+
+
 
 
 
@@ -150,48 +170,264 @@
 
 
 
+
 <Directory>:
     ml:ml
-    one:one
+    scroller: scroller
+    button:button
     ScrollView:
+        id: scroller
         do_scroll_x: False
+        bar_color: [.1, .5, .7, .9]
+        bar_margin: 3
+        bar_width: 5
+
         MDList:
             id: ml
-            OneLineListItem:
-                id: one
-                text: "One-line item"
-            TwoLineListItem:
-                text: "Two-line item"
-                secondary_text: "Secondary text here"
+            MDFlatButton:
+                id: button
+                text: 'Load Contacts'
+                pos_hint:{'center_x': 0.5, 'center_y': 0.5}
+                on_release: root.load_contacts();
+
+
+
+
+
+
+<Requests>:
+    name: name
+    prayer: prayer
+    Image:
+        source: 'tower.png'
+    FloatLayout:
+        MDLabel:
+            font_style: 'Body1'
+            theme_text_color: 'Primary'
+            text: "Phil 4:6\nDont\'t worry about anything;instead pray about everything. Tell God what you need and thank him for all he has done"
+            halign: 'center'
+            pos_hint:{'center_x': 0.5, 'center_y': 0.85}
+            markup: True
+            font_size: 25
+            color: 1, 0, 0, 1
+
+        SingleLineTextField:
+            id: name
+            size_hint: 0.6, None
+            height: dp(48)
+            hint_text: "Full Name "
+            pos_hint: {'center_x':.5, 'center_y': .6}
+            font_name:'Roboto-Thin'
+            multiline: False
+
+        SingleLineTextField:
+            id: prayer
+            size_hint: 0.6, None
+            height: dp(50)
+            hint_text: "Prayer "
+            pos_hint: {'center_x':.5, 'center_y': .4}
+            font_name:'Roboto-Thin'
+            multiline: True
+            hint_text: "Type Your Requests Here"
+        MDFloatingActionButton:
+            id:  float_act_btn
+            icon:'plus'
+            size_hint: None, None
+            size: dp(56), dp(56)
+            opposite_colors:    True
+            elevation_normal:    8
+            pos_hint:{'center_x': 0.8, 'center_y': 0.2}
+            on_release: root.add_request();prayer.text='';name.text=''#;root.send_notify()
+
+
+
+<RequestsReader>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 5
+        spacing: 5
+        Button:
+            text: "READ REQUESTS"
+            background_normal: 'back_norm4.png'
+            on_release: root.load_requests()
+        MDRaisedButton:
+            text: "Add Annoucements"
+            on_release: root.add_announce()
+        Button:
+            text: "READ REQUESTS"
+            background_normal: 'back_norm2.png'
+
+
+
+<Announce>:
+    message: message
+    title: 'Add Announcement'
+    markup: True
+    size_hint: .9, None
+    height: dp(300)
+    pos_hint:{'center_x': 0.5, 'center_y': 0.65}
+    FloatLayout:
+        SingleLineTextField:
+            id: message
+            hint_text: 'Message To Annouce'
+            multiline: False
+            pos_hint:{'center_x': 0.5, 'center_y': 0.8}
+
+        MDFloatingActionButton:
+            id:  float_act_btn
+            icon:'plus'
+            size_hint: None, None
+            size: dp(56), dp(56)
+            opposite_colors:    True
+            elevation_normal:    8
+            pos_hint:{'center_x': 0.8, 'center_y': 0.2}
+            on_release: root.add_announce()
+
+
+
+<TithePopup>:
+    amount:amount
+    add:add
+
+    size_hint: .6, None
+    height: dp(300)
+    pos_hint:{'center_x': 0.5, 'center_y': 0.65}
+    BoxLayout:
+        orientation:'vertical'
+        TextInput:
+            id: amount
+            hint_text: 'Amount'
+            font_size: 50
+        BoxLayout:
+            orientation: 'horizontal'
             Button:
-                text: 'test'
-                on_release: root.load_contacts()
+                id: add
+                text: 'Add'
+                on_press: root.on_add(root.title,int(amount.text))
 
 
+
+<TitheViewer>:
+    ml:ml
+    Image:
+        source: 'tower.png'
+
+    ScrollView:
+        id: scroller
+        do_scroll_x: False
+        bar_color: [.1, .5, .7, .9]
+        bar_margin: 3
+        bar_width: 5
+        MDList:
+            id: ml
 
 
 
 
 <Tithe>:
-    Button:
-        text: 'click'
+    months: months
+    Image:
+        source:'tower.png'
+    ScrollView:
+        id: scroller
+        do_scroll_x: False
+        GridLayout:
+            padding: 4
+            spacing: 4
+            cols: 2
+            id: months
+            size_hint_y: None
+            height: 8 * dp(100) # /1 * self.row_default_height
+    MDFloatingActionButton:
+        id:  float_act_btn
+        icon:'receipt' #chart
+        size_hint: None, None
+        size: dp(60), dp(60)
+        opposite_colors:    True
+        elevation_normal:    8
+        pos_hint:{'center_x': 0.8, 'center_y': 0.2}
+        on_press: app.change_screen('tithe_viewer')
+
+
+
+
+
+
+<GalleryPopup>:
+    gallery_popup:gallery_popup
+    image:image
+    id: gallery_popup
+    title: 'Viewer'
+    size_hint: .9, None
+    height: dp(550)
+    pos_hint:{'center_x': 0.5, 'center_y': 0.5}
+    FloatLayout:
+        AsyncImage:
+            id: image
+            allow_stretch: True
+            keep_ratio: False
+            #this will be used to
+            pos_hint:{'center_x': 0.5, 'center_y': 0.5}
+
 
 <Gallery>:
+    scroller: scroller
+    grid: grid
+    float_act_btn: float_act_btn
+
+    ScrollView:
+        id: scroller
+        do_scroll_x: False
+        GridLayout:
+            id: grid
+            cols: 2
+            #row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
+            #row_force_default: True
+            size_hint_y: None
+            height: 8 * dp(100) # /1 * self.row_default_height
+            padding: dp(4), dp(4)
+            spacing: dp(4)
+
+
+    MDFloatingActionButton:
+        id:  float_act_btn
+        icon:'plus'
+        size_hint: None, None
+        size: dp(56), dp(56)
+        opposite_colors:    True
+        elevation_normal:    8
+        pos_hint:{'center_x': 0.8, 'center_y': 0.2}
+       # on_release: root.add()
+
+
+
+
+<Announcements>:
+    ml:ml
+    scroller:scroller
+
     Image:
         source: 'tower.png'
-    MDSpinner:
-        id: spinner
-        size_hint: None,None
-        size: dp(35),dp(35)
-        pos_hint:{'center_x': 0.5, 'center_y': 0.85}
+    ScrollView:
+        id: scroller
+        do_scroll_x: False
+        bar_color: [.1, .5, .7, .9]
+        bar_margin: 3
+        bar_width: 5
 
+        MDList:
+            id: ml
+            MDFlatButton:
+                id: button
+                text: 'Load Contacts'
+                pos_hint:{'center_x': 0.5, 'center_y': 0.5}
+                on_release: root.load_announcements()
 
 
 
 
 <Drawer>:
     title: "Tower of Favour"
-
     NavigationDrawerIconButton:
         icon: 'mic'
         text: "Testimonies"
@@ -219,25 +455,20 @@
         text: "Pastors Circle"
         on_release: app.change_screen('pastors')
 
+
     NavigationDrawerIconButton:
         icon: 'info'
         text: "Announcements"
+        on_release: app.change_screen('announcements')
     NavigationDrawerIconButton:
         icon: 'calendar-alt'
         text: "Calender"
         on_release: app.change_screen('calender')
 
-
-    NavigationDrawerIconButton:
-        icon: 'card-giftcard'
-        text: "Donations"
-        on_release: app.change_screen('donations')
-
-
     NavigationDrawerIconButton:
         icon: 'dialpad'
         text: "Directory"
-        on_release: app.change_screen('directory');#root.load()
+        on_release: app.change_screen('directory')
 
     NavigationDrawerIconButton:
         icon: 'balance-wallet'
@@ -248,14 +479,17 @@
     NavigationDrawerIconButton:
         icon: 'slideshow'
         text: "Gallery"
-        on_release: app.change_screen('screen1')
+        on_release: app.change_screen('gallery')
 
     NavigationDrawerIconButton:
         icon: 'youtube'
         text: "GoshenTv"
         on_release: app.change_screen('screen1')
 
-
+    NavigationDrawerIconButton:
+        icon: 'key'
+        text: "Login"
+        on_release: app.change_screen('login'); print('testing login screen')
     NavigationDrawerIconButton:
         icon: 'flip-to-back'
         text: "Back"
