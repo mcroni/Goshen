@@ -10,6 +10,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
+from kivy.lang import Builder
+from kivy.uix.label import Label
+from kivy.uix.image import AsyncImage
+from kivy.uix.gridlayout import GridLayout
+from kivy.factory import Factory
+
 
 from mat.button import MDIconButton
 from mat.label import MDLabel
@@ -26,52 +32,138 @@ from kivy.uix.popup import Popup
 from mat.button import MDRaisedButton
 from mat.list import MDList
 from mat.list import TwoLineListItem, OneLineListItem
+import mat.snackbar as Snackbar
+from mat.grid import SmartTile,SmartTileWithLabel
+
+from mat.button import MDFloatingActionButton
+
+
+from socket import socket
 
 
 
-from plyer import vibrator
-from plyer import call
+from OpenSSL import SSL
+
+sock = socket()
 
 
-from screens import *
-from models import *
+
+
+
+import threading
+
+from directory import *
+from pastors import *
+from testimonies import *
+from announcements import *
+from request import *
+
+#from plyer import call
+#from plyer.platforms.android.notification import AndroidNotification
+
+
+
+#from models import *
+from models_sql import *
 session = Session()
 
 
-class CallerButton(TwoLineListItem):
-    def __init__(self,**kwargs):
-        super(CallerButton,self).__init__(**kwargs)
 
-    def on_touch_down(self,touch):
+class Sermons(Screen):
+    pass
+
+class Guide(Screen):
+    pass
+
+class DBScroll(Popup):
+    pass
+
+class Calender(Screen):
+    pass
+class Donations(Screen):
+    pass
+
+
+#use random to implement different themes
+
+class GalleryAlbums(SmartTileWithLabel):
+    def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             self.pressed = touch.pos
-	    vibrator.vibrate(0.1)
-	    call.dialcall()
-            #call.makecall(tel=self.tel)
-            #print('calling')
-            #notiff = AndroidNotification()
-            #title = 'goshen'
-            #notiff.notify(title= title, message='Calling ',app_name='goshen_app',app_icon='tower.ico',timeout=10)
+            print('pressed '+ str(self.text))
 
-
-
-
-
-
-
-class Directory(Screen,FloatLayout):
-    ml = ObjectProperty(None)
+class Gallery(Screen,GridLayout):
     scroller = ObjectProperty(None)
-    def load_contacts(self):
-        for name,number in session.query(Person.name,Person.number):
-            self.ids.ml.add_widget(CallerButton(text=str(name),secondary_text=str(number)))
-            
-            
-                
+    grid = ObjectProperty(None)
+    def __init__ (self,**kwargs):
+        super(Gallery, self).__init__(**kwargs)
+        #albums = [album for album in session.query(Albums.name)] #i need to fix this bug, it prints the names with trailing ''
+        if len(self.ids.grid.children) == 0:
+            for album in session.query(Albums.name):
+                str_album = str(album).strip()
+                tt_album = str_album[2:-3]
+                print(tt_album)
+                album = GalleryAlbums(text=tt_album,source='mac.png',)
+                self.ids.grid.add_widget(album)
+
+
+
+        # if len(self.ids.grid.children) == 0:
+        #     for i in range(10):
+        #         src = ("http://placehold.it/480x270.png&text=slide-%d&.png" % i)
+        #         image = MyTile(source=src, allow_stretch=True)
+        #         self.ids.grid.add_widget(image)
+
+
+            # will get back to you
 
 
 
 
+class GalleryPopup(Popup):
+    def __init__(self, **kwargs):
+        super(GalleryPopup, self).__init__(**kwargs)
+
+
+class MyTile(SmartTile):
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.pressed = touch.pos
+            print('pressed popup',str(self.source))
+            f = GalleryPopup()
+            f.title =self.source
+            f.ids.image.source = str(f.title) #this is crude but it works for me
+            f.open()
+
+
+
+class TitheButton(Button):
+    def __init__(self,**kwargs):
+        super(TitheButton,self).__init__(**kwargs)
+
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.pressed = touch.pos
+            print('touched',self.text)
+            self.add_tithe()
+        return super(TitheButton, self).on_touch_down(touch)
+
+    def add_tithe(self):
+        p = TithePopup()
+        p.title= self.text
+        p.open()
+
+
+
+class GoshenTV(Screen):
+    pass
+
+
+class MainScreen(Screen):
+    def __init__(self, **kwargs):
+        super(MainScreen, self).__init__(**kwargs)
+    #list of previous screens
 
 class Drawer(NavigationDrawer):
     def __init__(self,**kwargs):
@@ -83,20 +175,85 @@ class Drawer(NavigationDrawer):
 
 
 
+class TithePopup(Popup):
+    def __init__(self,**kwargs):
+        super(TithePopup,self).__init__(**kwargs)
 
-######################################
+    def on_add(self,month,amount):
+        print('called me',month, amount)
+        tithe_to_pay = ((10 / 100) * int(self.ids.amount.text))
+        print(tithe_to_pay)
+        tithe = Tithes(month=self.title, amount=tithe_to_pay)
+        session.add(tithe)
+        session.commit()
+        self.ids.amount.text=''
+        self.ids.amount.hint_text = 'Tithe has Been Recorded'
+
+        #print(self.text) #chale use this trick to add the figures to the db with neccessarily calling them with
+        # message = OBjectProperty.blah blah su=hit
+
+class TitheViewer(Screen):
+    def __init__(self,**kwargs):
+        super(TitheViewer,self).__init__(**kwargs)
+        for month,amount in session.query(Tithes.month,Tithes.amount):
+            self.ml.add_widget(OneLineListItem(text=month +'\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(amount)))
+
+
+
+
+
+
+from kivy.utils import get_color_from_hex
+import random
+
+class Tithe(Screen):
+    months = ObjectProperty(None)
+    def __init__(self,**kwargs):
+        super(Tithe,self).__init__(**kwargs)
+
+        months_list = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+        colors = ['#f8bbd0','#90caf9','#2196f3','#1a237e','#90a4ae','#d7ccc8','#AA00FF','#f57f17','#4db6ac',
+                 '#827717','#f0f4c3','#F5F5F5','#cccccc','#e6ee9c','#b39ddb','#ffca28']
+
+        for month in months_list:
+            self.ids.months.add_widget(TitheButton(text=month,
+                                                   background_color=get_color_from_hex(random.choice(colors)),
+                                                   on_pressed= lambda x: self.add_tithe()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class AvatarSampleWidget(ILeftBody, Image):
     pass
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
     pass
 class IconRightSampleWidget(IRightBodyTouch, MDCheckbox):
     pass
-#########################################################################
 
 
+class SubButton(Popup):
+    pass
 
 
-
+class Login(Screen):
+    def __init__(self,**kwargs):
+        super(Login,self).__init__(**kwargs)
 
 
 class Jarvis(App):
@@ -106,7 +263,11 @@ class Jarvis(App):
 
     def onBackBtn(self, window, key, *args):
         if key == 27:
-            return self.onBackButton()
+            if self.screen_list:
+                self.my_screenmanager.current = self.screen_list.pop()
+                return True
+
+            
 
     theme_cls = ThemeManager()
     nav_drawer = ObjectProperty()
@@ -114,6 +275,9 @@ class Jarvis(App):
     def build(self):
         self.title= "GoshenApp"
         self.my_screenmanager = ScreenManager()
+
+
+
         main_screen = MainScreen(name='screen1')
         testimonies = Testimonies(name='testimonies')
         pastors = Pastors(name='pastors')
@@ -123,28 +287,26 @@ class Jarvis(App):
         announcements = Announcements(name='announcements')
         donations = Donations(name='donations')
         directory = Directory(name='directory')
-        goshen_tv = GoshenTV(name= 'goshen_tv')
+        goshen_tv = GoshenTV(name='goshen_tv')
         gallery = Gallery(name='gallery')
+        tithe = Tithe(name='tithe')
+        requests_reader = RequestsReader(name='requests_reader')
+        tithe_viewer = TitheViewer(name='tithe_viewer')
+        login = Login(name='login')
 
-        self.my_screenmanager.add_widget(main_screen)
-        self.my_screenmanager.add_widget(testimonies)
-        self.my_screenmanager.add_widget(pastors)
-        self.my_screenmanager.add_widget(requests)
-        self.my_screenmanager.add_widget(sermons)
-        self.my_screenmanager.add_widget(guide)
-        self.my_screenmanager.add_widget(announcements)
-        self.my_screenmanager.add_widget(donations)
-        self.my_screenmanager.add_widget(directory)
-        self.my_screenmanager.add_widget(goshen_tv)
-        self.my_screenmanager.add_widget(gallery)
+        screenn_lists = [main_screen, testimonies, pastors, requests, sermons, guide,
+                         announcements,donations,
+                         directory,goshen_tv,gallery,tithe,requests_reader,tithe_viewer,login]
 
-
-
-        self.screen_list = ['screen1']
-        self.theme_cls.theme_style = 'Dark'
+        for screen in screenn_lists:
+            self.my_screenmanager.add_widget(screen)
 
 
 
+
+        self.screen_list = []
+        self.screen_list.append('screen1')
+        self.theme_cls.theme_style = 'Light'
         self.nav_drawer = Drawer()
 
         return self.my_screenmanager
@@ -163,11 +325,8 @@ class Jarvis(App):
         print(len(self.screen_list))
 
     def onBackButton(self):
-        if self.screen_list:
-            self.my_screenmanager.current = self.screen_list.pop()
-            return True
-
-        return False
+        pass
+        
 
 
     def on_pause(self):
@@ -175,6 +334,12 @@ class Jarvis(App):
 
     def on_resume(self):
         pass
+
+
+    def popman(self):
+        pop = DBScroll(auto_dismiss = False)
+        pop.open()
+
 
 if __name__=="__main__":
     from kivy.core.text import LabelBase
