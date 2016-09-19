@@ -2,15 +2,15 @@ from ftplib import FTP
 
 #domain name or server ip:
 ftp = FTP('ftp.goshen.heliohost.org')
+#ftp = FTP('ftp.point3hub.com')
 ftp.login(user='mcroni', passwd = 'paloma')
 
 print('connected')
-
-ftp.cwd('public_html')
+ftp.cwd('/public_html/albums/menz')
 print('changed')
 
 files = ftp.dir()
-print(files)
+#print(files)
 data = []
 ftp.dir(data.append)
 ftp.quit()
@@ -18,8 +18,10 @@ ftp.quit()
 
 
 for line in data:
+    if line[-3] == 'mp3':
+        print(line)
     #print(data)
-    print(line[62:])
+    #print(line[62:])
     
 
 

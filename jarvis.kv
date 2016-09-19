@@ -20,8 +20,9 @@
 #:import MDSlider mat.slider.MDSlider
 #:import MDLabel mat.label.MDLabel
 #:import MDDialog mat.dialog.MDDialog
-
-
+#:import Jarvis main
+#:import Gallery gallery
+#:import Loader main
 
 
 
@@ -54,8 +55,6 @@
         id: toolbar
         title: 'GoshenApp'
         right_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
-
-
 
 
 <F>:
@@ -157,38 +156,73 @@
 
 
 
+<DownPopup>:
+    play_stop:play_stop
+    size_hint: None,None
+    size: dp(370),dp(120)
+    pos_hint:{'center_x': 0.5, 'center_y': 0.65}
+
+    BoxLayout:
+        orientation:'horizontal'
+        Button:
+            id: play_stop
+            text:'Play'
+            on_release: root.play()
+        Button:
+            text:'Download'
+            on_release: root.download()
+        Button:
+            text:'Share Link'
+            on_release: root.share()
 
 
 
 <Sermons>
-    Image:
-        source: 'tower.png'
-    MDSpinner:
-        size_hint: None,None
-        size: dp(35),dp(35)
-        pos_hint:{'center_x': 0.5, 'center_y': 0.85}
-
-
-
-
-<Directory>:
-    ml:ml
     scroller: scroller
-    button:button
-    ScrollView:
-        id: scroller
-        do_scroll_x: False
-        bar_color: [.1, .5, .7, .9]
-        bar_margin: 3
-        bar_width: 5
+    grid: grid
+    spinner:spinner
+    box2: box2
+    #search_input: search_input
 
-        MDList:
-            id: ml
-            MDFlatButton:
-                id: button
-                text: 'Load Contacts'
-                pos_hint:{'center_x': 0.5, 'center_y': 0.5}
-                on_release: root.load_contacts();
+    BoxLayout:
+        id: box1
+        orientation:'vertical'
+        BoxLayout:
+            id: box2
+            height: "40dp"
+            size_hint_y: None
+
+            TextInput:
+                id: search_input
+                text: ''
+                hint_text:'Search Sermon Here :-)'
+
+        BoxLayout:
+            FloatLayout:
+                ScrollView:
+                    id: scroller
+                    do_scroll_x: False
+
+                    MDList:
+                        id: grid
+                        cols: 1
+                        #row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
+                        #row_force_default: True
+                        size_hint_y: None
+                        height: 8 * dp(100) # /1 * self.row_default_height
+                        padding: dp(4), dp(4)
+                        spacing: dp(4)
+                        SmartTileWithLabel:
+                            text:'Tap To Load Images'
+                            source: 'tower.png'
+                            on_press: root.load()
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None,None
+                    size: dp(30),dp(30)
+                    pos_hint:{'center_x': 0.5, 'center_y': 0.8}
+                    active: False
 
 
 
@@ -353,32 +387,17 @@
 
 
 
-<GalleryPopup>:
-    gallery_popup:gallery_popup
-    image:image
-    id: gallery_popup
-    title: 'Viewer'
-    size_hint: .9, None
-    height: dp(550)
-    pos_hint:{'center_x': 0.5, 'center_y': 0.5}
-    FloatLayout:
-        AsyncImage:
-            id: image
-            allow_stretch: True
-            keep_ratio: False
-            #this will be used to
-            pos_hint:{'center_x': 0.5, 'center_y': 0.5}
-
 
 <Gallery>:
     scroller: scroller
     grid: grid
-    float_act_btn: float_act_btn
+    spinner:spinner
 
     ScrollView:
         id: scroller
         do_scroll_x: False
-        GridLayout:
+
+        MDList:
             id: grid
             cols: 2
             #row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
@@ -387,17 +406,17 @@
             height: 8 * dp(100) # /1 * self.row_default_height
             padding: dp(4), dp(4)
             spacing: dp(4)
+            SmartTileWithLabel:
+                text:'Tap To Load Images'
+                source: 'tower.png'
+                on_press:  root.load()
 
-
-    MDFloatingActionButton:
-        id:  float_act_btn
-        icon:'plus'
-        size_hint: None, None
-        size: dp(56), dp(56)
-        opposite_colors:    True
-        elevation_normal:    8
-        pos_hint:{'center_x': 0.8, 'center_y': 0.2}
-       # on_release: root.add()
+    MDSpinner:
+        id: spinner
+        size_hint: None,None
+        size: dp(30),dp(30)
+        pos_hint:{'center_x': 0.5, 'center_y': 0.8}
+        active: False
 
 
 
@@ -422,6 +441,100 @@
                 text: 'Load Contacts'
                 pos_hint:{'center_x': 0.5, 'center_y': 0.5}
                 on_release: root.load_announcements()
+
+
+
+
+<Search>:
+    ml:ml
+    scroller: scroller
+    BoxLayout:
+        orientation:'vertical'
+        BoxLayout:
+            id: box1
+            height: "40dp"
+            size_hint_y: None
+            TextInput:
+                id: search_input
+                size_hint_x: 75
+                text:''
+
+        BoxLayout:
+            FloatLayout:
+                ScrollView:
+                    id: scroller
+                    do_scroll_x: False
+                    bar_color: [.1, .5, .7, .9]
+                    bar_margin: 3
+                    bar_width: 5
+                    MDList:
+                        id: ml
+
+                MDFloatingActionButton:
+                    id:  float_act_btn
+                    icon:'flip-to-back' #chart
+                    size_hint: None, None
+                    size: dp(60), dp(60)
+                    opposite_colors: True
+                    elevation_normal:8
+                    pos_hint:{'center_x': 0.9, 'center_y': 0.15}
+                    on_press: app.change_screen('screen1')
+
+
+
+
+<Quotes>:
+    ml:ml
+    scroller: scroller
+    BoxLayout:
+        orientation:'vertical'
+        BoxLayout:
+            id: box1
+            height: "40dp"
+            size_hint_y: None
+            TextInput:
+                id: search_input
+                size_hint_x: 75
+                text:''
+
+        BoxLayout:
+            FloatLayout:
+                ScrollView:
+                    id: scroller
+                    do_scroll_x: False
+                    bar_color: [.1, .5, .7, .9]
+                    bar_margin: 3
+                    bar_width: 5
+                    MDList:
+                        id: ml
+
+                MDFloatingActionButton:
+                    id:  float_act_btn
+                    icon:'flip-to-back' #chart
+                    size_hint: None, None
+                    size: dp(60), dp(60)
+                    opposite_colors: True
+                    elevation_normal:8
+                    pos_hint:{'center_x': 0.15, 'center_y': 0.15}
+                    on_press: app.change_screen('screen1')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -465,10 +578,6 @@
         text: "Calender"
         on_release: app.change_screen('calender')
 
-    NavigationDrawerIconButton:
-        icon: 'dialpad'
-        text: "Directory"
-        on_release: app.change_screen('directory')
 
     NavigationDrawerIconButton:
         icon: 'balance-wallet'
@@ -479,17 +588,17 @@
     NavigationDrawerIconButton:
         icon: 'slideshow'
         text: "Gallery"
-        on_release: app.change_screen('gallery')
+        on_release: app.change_screen('gallery');
 
     NavigationDrawerIconButton:
-        icon: 'youtube'
-        text: "GoshenTv"
-        on_release: app.change_screen('screen1')
+        icon: 'dialpad'
+        text: "Search"
+        on_release: app.change_screen('search');
 
     NavigationDrawerIconButton:
-        icon: 'key'
-        text: "Login"
-        on_release: app.change_screen('login'); print('testing login screen')
+        icon: 'quote'
+        text: "Quotes"
+        on_release: app.change_screen('quotes')
     NavigationDrawerIconButton:
         icon: 'flip-to-back'
         text: "Back"

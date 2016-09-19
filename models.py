@@ -32,6 +32,16 @@ class Person(Base):
     def __repr__(self):
         return self.name,
 
+
+class Cont(Base):
+    __tablename__ = 'cont'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    number = Column(Integer)
+    location = Column(String)
+
+    def __repr__(self):
+        return self.name,
 class Testify(Base):
     __tablename__='testimonies'
     id = Column(Integer,primary_key = True)

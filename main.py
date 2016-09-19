@@ -36,27 +36,19 @@ import mat.snackbar as Snackbar
 from mat.grid import SmartTile,SmartTileWithLabel
 
 from mat.button import MDFloatingActionButton
-
-
 from socket import socket
-
-
-
 from OpenSSL import SSL
-
-sock = socket()
-
-
-
 
 
 import threading
 
-from directory import *
 from pastors import *
 from testimonies import *
 from announcements import *
 from request import *
+from gallery import *
+from sermons import *
+from quotes import *
 
 #from plyer import call
 #from plyer.platforms.android.notification import AndroidNotification
@@ -64,13 +56,52 @@ from request import *
 
 
 #from models import *
+
+from persons import *
 from models_sql import *
+
 session = Session()
+person_session = Person_session()
+
+sock = socket()
 
 
 
-class Sermons(Screen):
-    pass
+class Quotes(Screen):
+    name_and_quo = {}
+    def __init__(self, **kwargs):
+        super(Quotes, self).__init__(**kwargs)
+        self.load()
+
+        #self.ids.search_input.bind(text=self.some_func)
+
+    def load(self):
+        """ im not sure i will be needing this function in final version"""
+        for name,quotes in session.query(Quotations.name,Quotations.quotes):
+            n_q = []
+            n_q.append(("'{}'".format(name),quotes))
+            print(n_q)
+            # self.name_and_quo['{}'.format(name)]= name
+            # self.name_and_quo['{}'.format(quotes)]=quotes
+            #print(self.name_and_quo.values())
+            #b = str(name)
+            #bb = b[2:-3]
+            #names.append(bb)
+
+    def some_func(self, *args):
+        returned_name = self.ids.search_input.text
+        self.ids.ml.clear_widgets()
+        query = session.query(Quotations.name).filter(Quotations.name.like('%{}%'.format(returned_name)))
+        for record in query:
+            self.ids.ml.add_widget(OneLineListItem(text=record.name))
+        print(len(self.ids.ml.children))
+        if len(self.ids.ml.children) == 0:
+            self.show_example_snackbar('simple')
+
+    def show_example_snackbar(self, snack_type):
+        if snack_type == 'simple':
+            Snackbar.make("Person Not Found :-(", duration=1)
+
 
 class Guide(Screen):
     pass
@@ -84,45 +115,6 @@ class Donations(Screen):
     pass
 
 
-#use random to implement different themes
-
-class GalleryAlbums(SmartTileWithLabel):
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            self.pressed = touch.pos
-            print('pressed '+ str(self.text))
-
-class Gallery(Screen,GridLayout):
-    scroller = ObjectProperty(None)
-    grid = ObjectProperty(None)
-    def __init__ (self,**kwargs):
-        super(Gallery, self).__init__(**kwargs)
-        #albums = [album for album in session.query(Albums.name)] #i need to fix this bug, it prints the names with trailing ''
-        if len(self.ids.grid.children) == 0:
-            for album in session.query(Albums.name):
-                str_album = str(album).strip()
-                tt_album = str_album[2:-3]
-                print(tt_album)
-                album = GalleryAlbums(text=tt_album,source='mac.png',)
-                self.ids.grid.add_widget(album)
-
-
-
-        # if len(self.ids.grid.children) == 0:
-        #     for i in range(10):
-        #         src = ("http://placehold.it/480x270.png&text=slide-%d&.png" % i)
-        #         image = MyTile(source=src, allow_stretch=True)
-        #         self.ids.grid.add_widget(image)
-
-
-            # will get back to you
-
-
-
-
-class GalleryPopup(Popup):
-    def __init__(self, **kwargs):
-        super(GalleryPopup, self).__init__(**kwargs)
 
 
 class MyTile(SmartTile):
@@ -130,10 +122,6 @@ class MyTile(SmartTile):
         if self.collide_point(*touch.pos):
             self.pressed = touch.pos
             print('pressed popup',str(self.source))
-            f = GalleryPopup()
-            f.title =self.source
-            f.ids.image.source = str(f.title) #this is crude but it works for me
-            f.open()
 
 
 
@@ -179,32 +167,35 @@ class TithePopup(Popup):
     def __init__(self,**kwargs):
         super(TithePopup,self).__init__(**kwargs)
 
-    def on_add(self,month,amount):
-        print('called me',month, amount)
-        tithe_to_pay = ((10 / 100) * int(self.ids.amount.text))
-        print(tithe_to_pay)
-        tithe = Tithes(month=self.title, amount=tithe_to_pay)
-        session.add(tithe)
-        session.commit()
-        self.ids.amount.text=''
-        self.ids.amount.hint_text = 'Tithe has Been Recorded'
+    # def on_add(self,month,amount):
+    #     print('called me',month, amount)
+    #     tithe_to_pay = ((10 / 100) * int(self.ids.amount.text))
+    #     print(tithe_to_pay)
+    #     tithe = Tithes(month=self.title, amount=tithe_to_pay)
+    #     session.add(tithe)
+    #     session.commit()
+    #     self.ids.amount.text=''
+    #     self.ids.amount.hint_text = 'Tithe has Been Recorded'
 
         #print(self.text) #chale use this trick to add the figures to the db with neccessarily calling them with
         # message = OBjectProperty.blah blah su=hit
 
-class TitheViewer(Screen):
-    def __init__(self,**kwargs):
-        super(TitheViewer,self).__init__(**kwargs)
-        for month,amount in session.query(Tithes.month,Tithes.amount):
-            self.ml.add_widget(OneLineListItem(text=month +'\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(amount)))
-
-
+# class TitheViewer(Screen):
+#     def __init__(self,**kwargs):
+#         super(TitheViewer,self).__init__(**kwargs)
+#         for month,amount in session.query(Tithes.month,Tithes.amount):
+#             self.ml.add_widget(OneLineListItem(text=month +'\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(amount)))
+#
+# # amount
 
 
 
 
 from kivy.utils import get_color_from_hex
 import random
+
+
+
 
 class Tithe(Screen):
     months = ObjectProperty(None)
@@ -225,9 +216,43 @@ class Tithe(Screen):
 
 
 
+class CustomListItem(OneLineListItem):
+    def __init__(self,**kwargs):
+        super(CustomListItem,self).__init__(**kwargs)
+
+    def on_touch_down(self,touch):
+        if self.collide_point(*touch.pos):
+            self.pressed = touch.pos
+            print('im touched',self.text)
+        return super(CustomListItem,self).on_touch_down(touch)
+
+class Search(Screen):
+    def __init__(self,**kwargs):
+        super(Search,self).__init__(**kwargs)
+        #self.load()
+
+        self.ids.search_input.bind(text=self.some_func)
+    def load(self):
+        """ im not sure i will be needing this function in final version"""
+        for name in session.query(Person.name):
+            b = str(name)
+            bb = b[2:-3]
+            names.append(bb)
+
+    def some_func(self,*args):
+        returned_name = self.ids.search_input.text
+        self.ids.ml.clear_widgets()
+        query = person_session.query(Person.name).filter(Person.name.like('%{}%'.format(returned_name)))
+        for record in query:
+            self.ids.ml.add_widget(CustomListItem(text=record.name))
+        print(len(self.ids.ml.children))
+        if len(self.ids.ml.children) == 0:
+            self.show_example_snackbar('simple')
 
 
-
+    def show_example_snackbar(self, snack_type):
+        if snack_type == 'simple':
+            Snackbar.make("Person Not Found :-(", duration=1)
 
 
 
@@ -251,10 +276,6 @@ class SubButton(Popup):
     pass
 
 
-class Login(Screen):
-    def __init__(self,**kwargs):
-        super(Login,self).__init__(**kwargs)
-
 
 class Jarvis(App):
     def __init__(self, **kwargs):
@@ -272,11 +293,12 @@ class Jarvis(App):
     theme_cls = ThemeManager()
     nav_drawer = ObjectProperty()
 
+    def toast(self):
+        Gallery.toast()
+
     def build(self):
         self.title= "GoshenApp"
         self.my_screenmanager = ScreenManager()
-
-
 
         main_screen = MainScreen(name='screen1')
         testimonies = Testimonies(name='testimonies')
@@ -286,27 +308,26 @@ class Jarvis(App):
         guide = Guide(name='guide')
         announcements = Announcements(name='announcements')
         donations = Donations(name='donations')
-        directory = Directory(name='directory')
-        goshen_tv = GoshenTV(name='goshen_tv')
+        quotes = Quotes(name='quotes')
         gallery = Gallery(name='gallery')
         tithe = Tithe(name='tithe')
         requests_reader = RequestsReader(name='requests_reader')
-        tithe_viewer = TitheViewer(name='tithe_viewer')
-        login = Login(name='login')
+        #tithe_viewer = TitheViewer(name='tithe_viewer')
+        search = Search(name= 'search')
 
-        screenn_lists = [main_screen, testimonies, pastors, requests, sermons, guide,
-                         announcements,donations,
-                         directory,goshen_tv,gallery,tithe,requests_reader,tithe_viewer,login]
 
-        for screen in screenn_lists:
+
+        screen_lists = [main_screen, testimonies, pastors, requests, sermons, guide,
+                         announcements,donations,gallery,tithe,requests_reader,
+                         search,quotes]
+
+        for screen in screen_lists:
             self.my_screenmanager.add_widget(screen)
-
-
 
 
         self.screen_list = []
         self.screen_list.append('screen1')
-        self.theme_cls.theme_style = 'Light'
+        self.theme_cls.theme_style = 'Dark'
         self.nav_drawer = Drawer()
 
         return self.my_screenmanager
@@ -346,7 +367,7 @@ if __name__=="__main__":
     LabelBase.register(name="Roboto",
                        fn_regular="Roboto-Regular.ttf",
                        fn_bold="Roboto-Thin.ttf")
-    LabelBase.register(name="Icons",
-                       fn_regular="icons.ttf",
-                       fn_bold="icons.ttf")
+    LabelBase.register(name='icons',
+                       fn_regular='icons.ttf',)
+
     Jarvis().run()

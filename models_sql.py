@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 
 
-engine = create_engine("mysql+pymysql://mcroni_dan:paloma@goshen.heliohost.org/mcroni_data",echo = False)
-#engine = create_engine("mysql+pymysql://point3hu_dan:w59@d-oiGaJG@point3hub.com/point3hu_data",echo = True)
+#engine = create_engine("mysql+pymysql://mcroni_dan:paloma@goshen.heliohost.org/mcroni_data",echo = False)
+engine = create_engine("mysql+pymysql://point3hu_dan:w59@d-oiGaJG@point3hub.com/point3hu_data",echo = True)
 
 #engine = create_engine('sqlite:///details.sqlite',echo = True)
 
@@ -70,14 +70,13 @@ class Albums(Base):
     name = Column(String(50))
 
 
+class Quotations(Base):
+    __tablename__='quotations'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(225))
+    quotes = Column(String(225))
 
-class Tithes(Base):
-     __tablename__='tithe'
-     id = Column(Integer,primary_key= True)
-     month = Column(String(20))
-     amount = Column(Integer)
 
 
 #Base.metadata.create_all(engine)
-
 print('\\\\ Database is Working ///////')
