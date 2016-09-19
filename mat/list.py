@@ -417,11 +417,6 @@ class TwoLineListItem(BaseListItem):
         super(TwoLineListItem, self).__init__(**kwargs)
         self.height = dp(72)
 
-    def on_touch_down(self,touch):
-        if self.collide_point(*touch.pos):
-            self.pressed = touch.pos
-            #return True
-            print('calling')
 
 class ThreeLineListItem(BaseListItem):
     _txt_top_pad = NumericProperty(dp(16))
